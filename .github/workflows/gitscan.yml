@@ -1,0 +1,49 @@
+name: Go Code Quality
+
+on: [push, pull_request]
+
+jobs:
+  go-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.24.5
+
+    #   - name: Verify formatting
+    #     run: |
+    #       unformatted=$(gofmt -l .)
+    #       if [ -n "$unformatted" ]; then
+    #         echo "Unformatted files:"
+    #         echo "$unformatted"
+    #         exit 1
+    #       fi
+
+      - name: Run go vet
+        run: |
+          mkdir -p reports
+          go vet ./... 2>&1 | tee reports/vet.txt
+
+      - name: Run golint
+        run: |
+          golint ./... | tee reports/lint.txt
+
+      - name: Run staticcheck
+        run: |
+          staticcheck ./... | tee reports/staticcheck.txt
+
+      - name: Check for issues
+        run: |
+          grep -q '.' reports/*.txt && exit 1 || echo "No issues found"
+
+      - name: Upload Lint Reports (if issues)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: go-lint-reports
+          path: reports/
