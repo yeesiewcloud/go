@@ -23,6 +23,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	// INSECURE: Hardcoded credentials
 	username := "admin"
 	passwordHash := md5.Sum([]byte("123456")) // INSECURE: weak hashing
+	fmt.Fprintf(w, "Expected user: %s, pass hash: %x\n", username, passwordHash)
 
 	// INSECURE: direct SQL concatenation (SQL injection)
 	userInput := r.FormValue("user")
